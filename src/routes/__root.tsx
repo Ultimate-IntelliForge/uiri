@@ -4,6 +4,7 @@ import appCss from "../styles.css?url";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
+import { Toaster } from "@/components/ui/sonner";
 
 function NotFoundComponent() {
   return (
@@ -87,6 +88,7 @@ function RootComponent() {
           <Outlet />
         </main>
         <Footer />
+        <Toaster position="top-right" />
       </div>
     </ThemeProvider>
   );

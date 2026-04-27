@@ -49,7 +49,7 @@ export function Footer() {
               Navigate
             </h4>
             <ul className="mt-4 space-y-2.5 text-sm">
-              {NAV_LINKS.map((l) => (
+              {[...NAV_LINKS, { to: "/testimonials", label: "Testimonials" } as const, { to: "/faq", label: "FAQ" } as const].map((l) => (
                 <li key={l.to}>
                   <Link
                     to={l.to}

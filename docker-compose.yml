@@ -1,0 +1,62 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: uiri_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-uiri}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-uiripassword}
+      POSTGRES_DB: ${POSTGRES_DB:-uiri_cms}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-uiri} -d ${POSTGRES_DB:-uiri_cms}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  migrate:
+    image: node:22-alpine
+    container_name: uiri_migrate
+    depends_on:
+      postgres:
+        condition: service_healthy
+    working_dir: /app
+    volumes:
+      - ./apps/api:/app
+      - ./node_modules:/root/node_modules
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-uiri}:${POSTGRES_PASSWORD:-uiripassword}@postgres:5432/${POSTGRES_DB:-uiri_cms}
+      DIRECT_URL: postgresql://${POSTGRES_USER:-uiri}:${POSTGRES_PASSWORD:-uiripassword}@postgres:5432/${POSTGRES_DB:-uiri_cms}
+    command: >
+      sh -c "npm install -g prisma && prisma migrate deploy"
+    profiles:
+      - migrate
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    container_name: uiri_api
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://${POSTGRES_USER:-uiri}:${POSTGRES_PASSWORD:-uiripassword}@postgres:5432/${POSTGRES_DB:-uiri_cms}
+      DIRECT_URL: postgresql://${POSTGRES_USER:-uiri}:${POSTGRES_PASSWORD:-uiripassword}@postgres:5432/${POSTGRES_DB:-uiri_cms}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
+      CSRF_SECRET: ${CSRF_SECRET}
+      WEB_BASE_URL: ${WEB_BASE_URL:-http://localhost:3000}
+      PORT: 4000
+    ports:
+      - "4000:4000"
+    profiles:
+      - full
+
+volumes:
+  postgres_data:

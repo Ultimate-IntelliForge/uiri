@@ -1,0 +1,287 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ─────────────────────────────────────────────────────────────
+// ENUMS
+// ─────────────────────────────────────────────────────────────
+
+enum DeptStatus {
+  ACTIVE
+  ARCHIVED
+}
+
+enum Visibility {
+  PUBLIC
+  PRIVATE
+}
+
+enum PubType {
+  ARTICLE
+  PROJECT_UPDATE
+  NEWS
+  ANNOUNCEMENT
+}
+
+enum PubStatus {
+  DRAFT
+  PENDING
+  PUBLISHED
+  REJECTED
+}
+
+enum MemberStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum Role {
+  SUPER_ADMIN
+  DEPT_ADMIN
+  BLOG_MANAGER
+  SYSTEM_AUDIT
+  EXTERNAL_PARTY
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum MediaType {
+  IMAGE
+  DOCUMENT
+}
+
+enum LinkStatus {
+  ACTIVE
+  USED
+  EXPIRED
+}
+
+// ─────────────────────────────────────────────────────────────
+// SITE SETTINGS — singleton (one row, id = "singleton")
+// ─────────────────────────────────────────────────────────────
+
+model SiteSettings {
+  id                       String   @id @default(cuid())
+  instituteName            String   @default("ULTIMATE INTELLIFORGE RESEARCH INSTITUTE")
+  tagline                  String?
+  contactEmail             String?
+  contactPhone             String?
+  address                  String?
+  globalSocialLinks        Json?
+  googleAnalyticsId        String?
+  searchConsoleVerifyToken String?
+  homepageFeaturedDeptIds  String[]
+  homepageFeaturedPubIds   String[]
+  updatedAt                DateTime @updatedAt
+}
+
+// ─────────────────────────────────────────────────────────────
+// DEPARTMENT
+// ─────────────────────────────────────────────────────────────
+
+model Department {
+  id                 String     @id @default(cuid())
+  name               String
+  slug               String     @unique
+  description        String?    @db.Text
+  researchFocus      String?    @db.Text
+  headResearcherName String?
+  status             DeptStatus @default(ACTIVE)
+  accentColor        String?
+  secondaryColor     String?
+  socialAccounts     Json?
+  createdAt          DateTime   @default(now())
+  updatedAt          DateTime   @updatedAt
+
+  users        User[]
+  publications Publication[]
+  teamMembers  TeamMember[]
+  pages        Page[]
+  mediaAssets  MediaAsset[]
+}
+
+// ─────────────────────────────────────────────────────────────
+// PAGE
+// ─────────────────────────────────────────────────────────────
+
+model Page {
+  id              String     @id @default(cuid())
+  title           String
+  slug            String
+  bodyContent     String?    @db.Text
+  visibility      Visibility @default(PUBLIC)
+  metaTitle       String?
+  metaDescription String?
+  departmentId    String?
+  department      Department? @relation(fields: [departmentId], references: [id])
+  publishedAt     DateTime?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  @@unique([slug, departmentId])
+}
+
+// ─────────────────────────────────────────────────────────────
+// PUBLICATION
+// ─────────────────────────────────────────────────────────────
+
+model Publication {
+  id              String     @id @default(cuid())
+  title           String
+  summary         String?
+  bodyContent     String?    @db.Text
+  type            PubType    @default(ARTICLE)
+  slug            String
+  authorId        String?
+  author          TeamMember? @relation(fields: [authorId], references: [id])
+  departmentId    String
+  department      Department @relation(fields: [departmentId], references: [id])
+  visibility      Visibility @default(PUBLIC)
+  status          PubStatus  @default(DRAFT)
+  rejectionReason String?
+  submittedAt     DateTime?
+  publishedAt     DateTime?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  attachments PublicationMedia[]
+
+  @@unique([slug, departmentId])
+  @@index([departmentId, status])
+  @@index([visibility, status, publishedAt])
+}
+
+model PublicationMedia {
+  publicationId String
+  mediaAssetId  String
+  publication   Publication @relation(fields: [publicationId], references: [id], onDelete: Cascade)
+  mediaAsset    MediaAsset  @relation(fields: [mediaAssetId], references: [id], onDelete: Cascade)
+  sortOrder     Int         @default(0)
+
+  @@id([publicationId, mediaAssetId])
+}
+
+// ─────────────────────────────────────────────────────────────
+// TEAM MEMBER
+// ─────────────────────────────────────────────────────────────
+
+model TeamMember {
+  id              String       @id @default(cuid())
+  fullName        String
+  jobTitle        String?
+  departmentId    String
+  department      Department   @relation(fields: [departmentId], references: [id])
+  biography       String?      @db.Text
+  publicBio       String?      @db.Text
+  profilePhotoUrl String?
+  publicFields    String[]     @default(["fullName", "jobTitle"])
+  personalContact String?
+  internalNotes   String?
+  status          MemberStatus @default(ACTIVE)
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  publications Publication[]
+}
+
+// ─────────────────────────────────────────────────────────────
+// USER — admin accounts only
+// ─────────────────────────────────────────────────────────────
+
+model User {
+  id           String     @id @default(cuid())
+  email        String     @unique
+  passwordHash String
+  role         Role[]
+  departmentId String?
+  department   Department? @relation(fields: [departmentId], references: [id])
+  status       UserStatus @default(ACTIVE)
+  lastLoginAt  DateTime?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  refreshTokens RefreshToken[]
+  accessLinks   AccessLink[]
+  mediaAssets   MediaAsset[]
+  auditLogs     AuditLog[]
+}
+
+// ─────────────────────────────────────────────────────────────
+// REFRESH TOKEN
+// ─────────────────────────────────────────────────────────────
+
+model RefreshToken {
+  id        String    @id @default(cuid())
+  tokenHash String    @unique
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+}
+
+// ─────────────────────────────────────────────────────────────
+// MEDIA ASSET
+// ─────────────────────────────────────────────────────────────
+
+model MediaAsset {
+  id                 String    @id @default(cuid())
+  fileName           String
+  fileType           MediaType
+  storageUrl         String
+  downloadUrl        String?
+  storageProviderRef String
+  uploadedById       String
+  uploadedBy         User      @relation(fields: [uploadedById], references: [id])
+  departmentId       String?
+  department         Department? @relation(fields: [departmentId], references: [id])
+  uploadedAt         DateTime  @default(now())
+
+  publicationAttachments PublicationMedia[]
+}
+
+// ─────────────────────────────────────────────────────────────
+// ACCESS LINK — one-use encrypted links
+// ─────────────────────────────────────────────────────────────
+
+model AccessLink {
+  id          String     @id @default(cuid())
+  targetId    String
+  targetType  String
+  token       String     @unique
+  createdById String
+  createdBy   User       @relation(fields: [createdById], references: [id])
+  expiresAt   DateTime
+  usedAt      DateTime?
+  status      LinkStatus @default(ACTIVE)
+  createdAt   DateTime   @default(now())
+}
+
+// ─────────────────────────────────────────────────────────────
+// AUDIT LOG
+// ─────────────────────────────────────────────────────────────
+
+model AuditLog {
+  id               String   @id @default(cuid())
+  actorId          String
+  actor            User     @relation(fields: [actorId], references: [id])
+  action           String
+  targetEntityType String
+  targetEntityId   String
+  metadata         Json?
+  departmentScope  String?
+  timestamp        DateTime @default(now())
+
+  @@index([actorId])
+  @@index([departmentScope])
+  @@index([timestamp])
+}

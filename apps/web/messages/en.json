@@ -1,0 +1,71 @@
+{
+  "nav": {
+    "home": "Home",
+    "departments": "Departments",
+    "research": "Research",
+    "team": "Team",
+    "news": "News",
+    "about": "About",
+    "contact": "Contact"
+  },
+  "home": {
+    "title": "ULTIMATE INTELLIFORGE RESEARCH INSTITUTE",
+    "tagline": "Advancing technology through relentless research"
+  },
+  "common": {
+    "readMore": "Read more",
+    "viewAll": "View all",
+    "loading": "Loading…",
+    "error": "Something went wrong",
+    "notFound": "Page not found",
+    "back": "Back",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "submit": "Submit",
+    "approve": "Approve",
+    "reject": "Reject",
+    "publish": "Publish",
+    "archive": "Archive",
+    "active": "Active",
+    "archived": "Archived",
+    "public": "Public",
+    "private": "Private"
+  },
+  "auth": {
+    "login": "Log in",
+    "logout": "Log out",
+    "email": "Email address",
+    "password": "Password",
+    "loginTitle": "Admin Login",
+    "invalidCredentials": "Invalid email or password"
+  },
+  "admin": {
+    "dashboard": "Dashboard",
+    "departments": "Departments",
+    "publications": "Publications",
+    "team": "Team Members",
+    "media": "Media Library",
+    "pages": "Pages",
+    "users": "Users",
+    "settings": "Site Settings",
+    "accessLinks": "Access Links",
+    "auditLog": "Audit Log"
+  },
+  "publication": {
+    "status": {
+      "draft": "Draft",
+      "pending": "Pending Review",
+      "published": "Published",
+      "rejected": "Rejected"
+    },
+    "type": {
+      "article": "Article",
+      "project_update": "Project Update",
+      "news": "News",
+      "announcement": "Announcement"
+    }
+  }
+}

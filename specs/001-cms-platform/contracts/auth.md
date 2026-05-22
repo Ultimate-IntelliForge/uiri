@@ -26,7 +26,7 @@ Login with email and password.
   "user": {
     "id": "cuid",
     "email": "admin@uiri.org",
-    "role": "SUPER_ADMIN",
+    "role": ["SUPER_ADMIN"],
     "departmentId": null
   }
 }
@@ -80,7 +80,7 @@ Refresh the access token using the httpOnly refresh token cookie.
 {
   "id": "cuid",
   "email": "admin@uiri.org",
-  "role": "DEPT_ADMIN",
+  "role": ["DEPT_ADMIN"],
   "departmentId": "cuid"
 }
 ```

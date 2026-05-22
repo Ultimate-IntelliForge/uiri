@@ -7,20 +7,26 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Dependencies
 node_modules
+
+# Build output
 dist
-dist-ssr
+.next
 .output
-.vinxi
-.tanstack/**
-.nitro
-*.local
 
-# Wrangler / Cloudflare
-.wrangler/
-.dev.vars
+# Turbo cache
+.turbo
 
-# Editor directories and files
+# Env files — never commit secrets
+.env
+.env.local
+.env.*.local
+
+# Google Drive Service Account key (secret)
+apps/api/secrets/
+
+# Editor
 .vscode/*
 !.vscode/extensions.json
 .idea

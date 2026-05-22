@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(bash .specify/extensions/git/scripts/bash/create-new-feature.sh --json --short-name \"cms-platform\" \"Ultimate IntelliForge CMS platform - company portfolio and content management system\")"
+      "Bash(bash .specify/extensions/git/scripts/bash/create-new-feature.sh --json --short-name \"cms-platform\" \"Ultimate IntelliForge CMS platform - company portfolio and content management system\")",
+      "Bash(pnpm --version)"
     ]
   }
 }
